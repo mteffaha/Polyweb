@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <style type="text/css">
+  body {
+    background-image: url(Ressources/bg-body.png);
+    padding: 5px;
+    margin: 10px 70px 10px 70px;
+  }
+  
+  h1,h2,h3 {
+     color: #00008B; 
+  }
+  
+  h1 {
+    text-align: center;
+  }
+  
+  h2 {
+      padding-top: 1em;
+      margin-top: 2em;
+      border-top: 2px solid gray;
+  }
+  
+  h3 {
+   color: #00008B;
+  }
+  
+  p {
+      padding-left: 20px;
+  }
+  
+  ul {
+      padding-left: 60px;
+  }
+  </style>
+</head>
+<body>
+<!-- -*- mode: markdown -*- -->
+
+<h1 id="polyweb-les-extensions">Polyweb: les extensions</h1>
+<p>Le serveur polyweb peut être étendu par des module externes que l'on appelle des <em>extensions</em>. Ces modules sont dans le répertoire <code>ext</code> de la distribution qui vous est fournie.</p>
+<!--  Pour emacs : -*- mode:  markdown -*-  -->
+
+<h2 id="module-cgi">Module cgi</h2>
+<h3 id="description">Description</h3>
+<p>Ce module permet d'implementer la <strong>Common Gateway Interface</strong> (littéralement « Interface de passerelle commune »), généralement abrégée <a href="http://fr.wikipedia.org/wiki/Common_Gateway_Interface"><strong>CGI</strong></a>.</p>
+<h3 id="fonctionnement">Fonctionnement</h3>
+<p>Lorsque l'URI demandée au serveur correspond a un fichier exécutable, le module lance l'exécution du programme et redirige les caractères affichés sur la sortie standard vers le client. Si l'URI ne correspond pas à un programme exécutable, le module en délègue le traitement au module inférieur.</p>
+<p>Ce module permet de traiter les requêtes <a href="http://fr.wikipedia.org/wiki/M%C3%A9thode_de_requ%C3%AAte#M.C3.A9thodes">HTTP</a> de type <code>GET</code> et de type <code>POST</code>. Lorsque le programme désigné par l'URI est exécuté, le répertoire par défaut est positionné sur le répertoire du serveur qui contient le programme. Par ailleurs, un certain nombre d'informations sont rangées dans des variables d'environnement. Ces différents points sont détaillé ci-dessous.</p>
+<h4 id="environnement">Environnement</h4>
+<p>Avant de lancer l'exécution d'un programme, le module <code>cgi</code> construit l'environnement nécessaire à l'exécution du programme.</p>
+<p><em>Extrait <a href="http://fr.wikipedia.org/wiki/Variables_d%27environnement_CGI">Wikipédia</a>:</em></p>
+<blockquote>
+<p>Les <strong>variables d'environnement CGI</strong> sont des variables transmises à un programme CGI, par le serveur Web l'invoquant, lors de son exécution. Elles fournissent des informations sur la requête effectuée par le client, sur le serveur et également sur le client lui-même. Par exemple, lorsqu'on effectue une recherche sur un site qui fonctionne avec des CGI, le script récupérera les termes de la recherche avec la variable d'environnement « QUERY_STRING ».</p>
+</blockquote>
+<p>Pour fonctionner, seules quelques variables sont vraiment nécessaires. Le module <code>cgi</code> n'implémente donc qu'un sous-ensemble des variables CGI. Les variables mises à jour par le module sont:</p>
+<ul>
+<li><code>DOCUMENT_ROOT</code>: la racine des documents du serveur.</li>
+<li><code>GATEWAY_INTERFACE</code>: toujours égale à <code>CGI/1.1</code>.</li>
+<li><code>PATH</code>: le path du programme (limité à la valeur <code>/bin:/usr/bin:/usr/local/bin</code> pour des raisons de sécurité)</li>
+<li><code>QUERY_STRING</code>: Contient tout ce qui suit le « ? » dans l'URL envoyée par le client. Toutes les variables provenant d'un formulaire envoyé avec la méthode « GET » seront contenues dans le QUERY_STRING sous la forme «<code>var1=val1&amp;var2=val2&amp;...</code>».</li>
+<li><code>REMOTE_ADDR</code>:L'adresse IP du client.</li>
+<li><code>REQUEST_METHOD</code>: <code>GET</code> ou <code>POST</code> suivant la méthode HTTP d'accès.</li>
+<li><code>REQUEST_URI</code>: l'URI utilisée pour déclencher l'exécution du programme.</li>
+<li><code>SERVER_PROTOCOL</code>: toujours <code>HTTP/1.0</code> ici.</li>
+<li><code>SERVER_SOFTWARE</code>: le nom et la version du serveur web.</li>
+</ul>
+<p>Par ailleurs, lorsque le programme est lancé par la méthode <code>POST</code> deux variables supplémentaires doivent être initialisées pour que les programmes exécutés retrouvent leurs données:</p>
+<ul>
+<li><code>CONTENT_TYPE</code>: qui contient la façon dont les données du programme sont encodées.</li>
+<li><code>CONTENT_LENGTH</code>: qui contient la longueur des données du programme.</li>
+</ul>
+<p>Les valeurs de <code>CONTENT_TYPE</code> et <code>CONTENT_LENGTH</code> n'ont pas à être calculés; elles sont en fait en fait données par le client dans les en-têtes qui suivent la requête (champs <code>Content-Length</code> et <code>Content-Type</code>).</p>
+<p><em>Exemples de programmes CGI</em>:</p>
+<ul>
+<li><a href="http://localhost:1234/demos/env.py">Affichage de l'environnement</a></li>
+<li><a href="http://localhost:1234/demos/sinus.py">Fonction sinus</a></li>
+</ul>
+<h4 id="méthode-get-et-méthode-post">Méthode GET et Méthode POST</h4>
+<p>Lorsque l'on remplit un formulaire sur le web, les données saisies peuvent être envoyées au serveur de deux façons. Ainsi, si on remplit un formulaire avec deux champs <code>nom</code> et <code>prenom</code>, le programme peut être appelé des deux façons suivantes</p>
+<ul>
+<li><p><strong>Méthode GET</strong>: Dans ce cas, les valeurs du nom et du prenom sont passés directement dans l'URL. Par exemple, le formulaire pourra demander l'affichage de la page <code>traiter_personne?nom=Dupond&amp;prenom=Jean</code>. Le script <code>traiter_personne</code> sera exécuté et il pourra trouver les valeurs de <code>nom</code> et <code>prenom</code> dans la variable d'environnement <code>QUERY_STRING</code>.<br /><br />L'<a href="http://localhost:1234/demos/env.py?nom=Dupond&amp;prenom=Jean">exemple</a> suivant montre une telle utilisation de la méyhode <code>GET</code>.</p></li>
+<li><p><strong>Méthode POST</strong>: La méthode <code>GET</code> précédente présente deux inconvénient majeurs. Tout d'abord, les données dont visibles dans l'URL (c'est embêtant pour passer un mot de passe par exemple). Ensuite, la taille d'une URL est en général limitée et il n'est donc pas possible de passer de gros volume d'information (<em>eg</em> chargement d'un fichier).<br /><br />La méthode POST permet de résoudre ce problème: au lieu de passer les données dans l'URL, celles-ci sont écrites sur le fichier standard d'entrée du programme. Noter que le programme sait combien de caractères il doit lire, puisque sa variable d'environnement <code>CONTENT_LENGTH</code> contient la taille des données à lire.<br /><br />Le fichier <a href="http://localhost:1234/demos/test-cgi.py">test-cgi.py</a> montre une utilisation des deux méthodes sur un même formulaire. De même, on trouvera aussi dans <a href="http://localhost:1234/demos/test-file-upload.py">test-file-upload.py</a> un programme permettant de charger sur le serveur un fichier résident sur le client.</p></li>
+</ul>
+<h3 id="démo">Démo</h3>
+<p>Quatre démos sont disponibles pour ce module</p>
+<ul>
+<li><a href="http://localhost:1234/demos/env.py">Affichage de l'environnement</a></li>
+<li><a href="http://localhost:1234/demos/sinus.py">Fonction sinus</a></li>
+<li><a href="http://localhost:1234/demos/test-cgi.py">Test formulaire</a></li>
+<li><a href="http://localhost:1234/demos/test-file-upload.py">Chargement de fichier</a> <!--  Pour emacs : -*- mode:  markdown -*-  --></li>
+</ul>
+<h2 id="module-mytraceuri">Module mytraceuri</h2>
+<h3 id="description-1">Description</h3>
+<p>Ce module permet d'afficher une trace pour chaque URI demandée au serveur.</p>
+<h3 id="exécution">Exécution</h3>
+<p>Ce module affiche les informations relatives à l'URI en cours de traitement et laisse ensuite les modules inférieurs traiter celle-ci.</p>
+<p>Pour voir passer toutes les URI, il faut que ce module soit exécuté en premier (et donc chargé en dernier).</p>
+<h3 id="fonctionnement-1">Fonctionnement</h3>
+<p>Le handler associé à ce module est simple: il affiche des informations sur le fichier standard d'erreur et se termine en renvoyant 0 (quand un handler renvoie 0, il signale au handler inférieur qu'il n'a pas traité cette URL, et demande à ce dernier de le faire).</p>
+<h3 id="démo-1">Démo</h3>
+<p>Pas de démo pour ce module. <!--  Pour emacs : -*- mode:  markdown -*-  --></p>
+<h2 id="module-prettify">Module prettify</h2>
+<h3 id="description-2">Description</h3>
+<p>Ce module permet d'embellir un fichier lorsqu'il est chargé par un navigateur Web. Cela peut servir pour &quot;fontifier&quot; des programmes ou afficher en HTML des fichiers <a href="http://fr.wikipedia.org/wiki/Markdown">Markdown</a>.</p>
+<h3 id="exécution-1">Exécution</h3>
+<p>Ce module délègue le traitement d'une URL au module inférieur si celle-ci ne comporte pas de directive d'embellissement.</p>
+<h3 id="fonctionnement-2">Fonctionnement</h3>
+<p>Deux directives sont reconnues par ce module.</p>
+<ul>
+<li><p><strong>fontify</strong>: cette directive permet d'afficher une version &quot;fontifiée&quot; en HTML du fichier. Pour effectuer la transformation en HTML, on pourra utiliser la commande <em>pygmentize</em>. Par exemple, pour obtenir sur la sortie standard une version enjolivée du fichier C <code>file.c</code>, on peut exécuter:</p>
+<p><code>pygmentize -f html -Ofull file.c</code></p></li>
+<li><p><strong>markdown</strong>: cette directive permet d'afficher une version HTML d'un fichier utilisant le langage de balises légères <a href="http://fr.wikipedia.org/wiki/Markdown">Markdown</a>. La version HTML d'un fichier markdown peut être obtenue grâce à la commande <em>pandoc</em>. Ainsi, pour obtenir une version enjolivée du fichier <code>file.md</code> sur la sortie standard, on peut exécuter:</p>
+<p><code>pandoc -s file.md</code></p></li>
+</ul>
+<p>Les directives <em>fontify</em> et <em>markdown</em> sont placées à la fin de l'URI. Ainsi,</p>
+<ul>
+<li><p>l'URI <a href="http://localhost:1234/ext/simple-module.c">http://localhost:1234/ext/simple-module.c</a> permet d'afficher le fichier simple-module.c normalement (dans ce cas, le module ne fait rien et délègue l'affichage au module inférieur).</p></li>
+<li><p>l'URI <a href="http://localhost:1234/ext/simple-module.c?fontify">http://localhost:1234/ext/simple-module.c?fontify</a> permet de voir le fichier enjolivé (dans ce cas le module effecte le traitement en utilisant la sortie de la commande de &quot;fontification&quot; sur le fichier <code>ext/simple-module.c</code>).</p></li>
+</ul>
+<p>De même:</p>
+<ul>
+<li><p>l'URI: <a href="http://localhost:1234/ext/prettify.md">http://localhost:1234/ext/prettify.md</a> permet d'afficher la documentation du fichier <em>prettify</em> en texte brut, alors que</p></li>
+<li><p>l'URI: <a href="http://localhost:1234/ext/prettify.md?markdown">http://localhost:1234/ext/prettify.md?markdown</a> permet de l'afficher en HTML.</p></li>
+</ul>
+<h3 id="options-du-module-prettify">Options du module prettify</h3>
+<p>Ce module accepte deux options <code>fontify-cmd</code> et <code>markdown-cmd</code> qui peuvent être placées dans le fichier de configuration du serveur web (fichier <code>polywebrc</code>). L'utilisation de ces options doit se faire après que le module `prettify ait été chargé.</p>
+<ul>
+<li><p><code>fontify-cmd</code>: permet de spécifier la commande Unix utilisée pour la fontification. Par exemple: <code>fontify-cmd  pygmentize -f html -Ofull</code></p></li>
+<li><p><code>markdown-cmd</code>: permet de spécifier la commande Unix utilisée pour afficher en HTML un fichier Markdown. Par exemple: <code>markdown-cmd pandoc -s</code></p></li>
+</ul>
+<h3 id="démo-2">Démo</h3>
+<p>Une démo de ce module est accessible <a href="http://localhost:1234/ext/prettify.md?markdown">ici</a>.</p>
+<h3 id="divers">Divers</h3>
+<p>Pour fonctionner, les modules suivants doivent être installés:</p>
+<ul>
+<li><p><strong>pandoc</strong> (pour installer sur Ubuntu: <code>sudo apt-get install pandoc</code>)</p></li>
+<li><p><strong>python-pygments</strong> (pour installer sur Ubuntu: <code>sudo apt-get install python-pygments</code>)</p></li>
+</ul>
+<!--  LocalWords:  pygmentize markdown pandoc md fontifier fontify
+ -->
+<!--  LocalWords:  Ubuntu
+ -->
+<!--  Pour emacs : -*- mode:  markdown -*-  -->
+
+<h2 id="module-simple-module">Module simple-module</h2>
+<h3 id="description-3">Description</h3>
+<p>Ce module ne fait rien de spécial. Il est donné ici pour montrer comment compiler et charger un module dans un programme existant.</p>
+<h3 id="exécution-2">Exécution</h3>
+<p>Ce module affiche quelques informations au moment de son chargement. Les informations affichées sont le résultat de l'exécution de fonctions qui sont dans le programme principal.</p>
+<h3 id="démo-3">Démo</h3>
+<p>Pas vraiment de démo pour ce programme (en fait, la démo c'est le source du programme et le <code>Makefile</code>).</p>
+<!--  Pour emacs : -*- mode:  markdown -*-  -->
+
+<h2 id="module-ssi">Module ssi</h2>
+<h3 id="description-4">Description</h3>
+<p>Ce module permet d'implémenter une version simplifiée du mécanisme de <a href="http://fr.wikipedia.org/wiki/Server_Side_Includes">Server Side Includes</a>.</p>
+<h3 id="exécution-3">Exécution</h3>
+<p>Ce module ne traite que deux directives (voir ci-dessous). Le traitement des directives ne se fait que sur les fichiers suffixés par <code>.shtml</code>. La autres fichiers sont traités par les modules inférieurs.</p>
+<h3 id="fonctionnement-3">Fonctionnement</h3>
+<p>Cette version n'implémente que deux directives:</p>
+<ul>
+<li>include</li>
+<li>exec</li>
+</ul>
+<p>De plus, pour simplifier l'analyse, il ne peut y avoir qu'un seule directive directives sur seule ligne du fichier <code>.shtml</code> (mais il peut y avoir du texte avant et après la balise d'inclusion ou d'exécution).</p>
+<p>Lorsqu'on inclut un fichier ou lorsqu'on exécute une commande, le répertoire par défaut est le répertoire qui contient le fichier <code>.shtml</code>. Cela permet l'inclusion de commandes dans le contexte du fichier qui a déclenché l'exécution du module sans à avoir à connaître le chemin exact du fichier <code>.shtml</code>. L'accès aux fichiers ou au commandes contenues dans le fichier <code>.shtml</code> peur donc se faire de façon relative.</p>
+<p>Un exemple de fichier .shtml est donné ci-dessous:</p>
+<pre class="sourceCode html"><code class="sourceCode html">           <span class="co">&lt;!--#include file=&quot;entete.html&quot; --&gt;</span>
+           <span class="kw">&lt;p&gt;</span>Le répertoire contient les fichiers suivants<span class="dv">&amp;nbsp;</span>:<span class="kw">&lt;/p&gt;</span>
+           <span class="kw">&lt;pre&gt;</span><span class="co">&lt;!--#exec cmd=&quot;ls&quot;--&gt;</span><span class="kw">&lt;/pre&gt;</span>
+           <span class="co">&lt;!--#include file=&quot;pied.html&quot; --&gt;</span></code></pre>
+<p><strong>Note</strong>: l'analyse des balises SSI se fait avec des expressions régulières (primitives <code>regcomp</code>, <code>regexec</code>, ...).</p>
+<h3 id="démo-4">Démo</h3>
+<p>Deux démos sont disponibles pour ce module:</p>
+<ul>
+<li><a href="http://localhost:1234/demos/test-ssi1.shtml">demo1</a></li>
+<li><a href="http://localhost:1234/demos/test-ssi2.shtml">demo2</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,13 @@
+Contenu du répertoire de démos
+==============================
+
+* Dir1:			un répertoire qui contient in fichier index.html
+* Dir2:			un répertoire sans index.html
+* env.py		un script python qui affiche l'environnement CGI
+* sinus.py		un script python qui affiche une sinusoide
+* test-cgi.py		un petit script cgi qui demande deux informations
+			   Utilisation des méthodes GET et POST de HTTP
+* test-file-upload	un script permettant de charger un fichier avec la
+  			méthode POST
+* test-ssi1.html	un fichier utilisant les SSI
+* test-ssi2.html	un autre fichier utilisant les SSI

@@ -1,0 +1,25 @@
+
+Ce répertoire contient trois fichiers C.
+
+* simple-server.c est un simple serveur pour illustrer comment se
+  servir du fichier network.c. Ce programme lit une ligne de son
+  client et lui renvoie cette ligne convertie en majuscules. Pour
+  tester ce serveur, vous pouvez lancer la commande
+      netcat localhost 1234
+  dans un autre terminal et saisir des caractères dans ce
+  terminal.  Dans cette version, il ne peut y avoir qu'un seul client
+  et dès que le client se termine, le serveur s'arrête.
+
+* multi-server.c est une petite modification du serveur
+  précédent. Cette version lance un nouveau processus à chaque fois que
+  l'on a un nouveau client. On peut donc ouvrir plusieurs terminaux qui
+  lance netcat. Dans chaque terminal, les caractères saisis sont mis
+  en majuscules (et seulement ceux qui sont saisis dans le teminal).
+  Dans la fenêtre du serveur, on voit par contre toutes les lignes
+  lues, quelque soit le terminal où elles on été saisies.
+
+* web-server.c est un embryon de serveur web. Cette version de serveur
+  suit le protocole HTTP. A chaque requête, il écrit un en-tête HTTP
+  suivi de la date courante. Ce programme peut être testé depuis un
+  navigateur web en entrant l'URL http://localhost:1234. A chaque fois
+  que la page est rechargée, la date est mise à jour.

@@ -1,0 +1,23 @@
+<html>
+  <head>
+<title>Test des fonctionnalités SSI du serveur Polyweb</title>
+</head>
+<body>
+ <h3>Test de la fonctionnalité exec</h3>
+  Répertoire courant: <code><!-- #exec cmd="pwd" --></code><br />
+  <p> Contenu du répertoire:
+  <blockquote><pre><!-- #exec cmd="ls -l" --></pre></blockquote>
+  </p>
+
+  <h3>Test de la fonctionnalité include</h3>
+  <p> Inclusion brute d'un fichier</p>
+  <blockquote><pre><!--#include file="../ext/prettify.md"--></pre></blockquote>
+
+
+  <h3>Embellissement d'un fichier:</h3>
+   <p> Contenu d'un fichier markdown (après exécution de la commande pandoc):
+    <blockquote><!-- #exec cmd="pandoc ../ext/prettify.md" --></blockquote>
+  </p>
+
+</body>
+</html>

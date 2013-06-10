@@ -1,0 +1,13 @@
+		Distribution du serveur Web Polyweb
+
+			Projet SI3 juin 2013
+
+
+La documentation du projet est dans le répertoire 'doc'
+
+Pour compiler le projet
+     make
+
+Pour faire du ménage:
+     make clean
+

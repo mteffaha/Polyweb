@@ -1,0 +1,52 @@
+#					Pour emacs: -*- mode: conf -*-
+#
+# Un fichier de config pour polyweb
+# ---------------------------------
+#
+#           Author: Erick Gallesio [eg@unice.fr]
+#    Creation date: 26-Apr-2013 19:03 (eg)
+# Last file update:  2-Jun-2013 15:24 (eg)
+
+# Les commentaires commencent par un "#" et se poursuivent jusqu'à la fin de
+# ligne
+	   # Ce "#" peut être précédé de caractères quelconques
+# Une option de configuration est formée de 2 "mots":
+#         - le nom de l'option (placé en début de ligne)
+#         - la valeur de l'option (texte qui suit le nom de l'option).
+
+
+# ======================================================================
+
+# Passage en mode debug
+debug-mode   1			# > 0 => mode debug activé
+				# plus le nombre est grand plus on a des infos
+#  La racine des documents
+document-root ..
+
+# Le port sur lequel on écoute
+listen-port  1234
+
+# Les mime-type que l'on veut ajouter
+mime-type jpeg	image/jpeg
+mime-type jpg	image/jpeg
+mime-type gif	image/gif
+mime-type htm	text/html
+mime-type html	text/html
+mime-type pdf	application/pdf
+mime-type txt	text/plain
+
+
+# les extensions à charger
+modules-dir	../ext			  # Répertoire où se trouvent les extensions
+
+#module		simple-module		  # L'exemple dont le source est donné
+module		cgi			  # scripts CGI
+module		ssi			  # Sous-ensemble SSI sur fichier .shtml
+module		prettify		  # Mise en forme de fichiers
+fontify-cmd	pygmentize -f html -Ofull #     - commande "fontification"
+markdown-cmd	pandoc -s		  #     - commande Markdown -> HTML
+module		mytraceuri		  # Une trace simple sur les URI chargées
+
+# Enlever les commentaires suivants pour avoir des erreurs
+#unknown_option 1000			   # option inconnue
+#listen-port    200			   # doit être > 1024
