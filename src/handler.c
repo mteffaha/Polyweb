@@ -11,6 +11,8 @@
 #include "network.h"
 #include "http.h"
 #include "handler.h"
+#include "misc.h"
+#include "polyweb.h"
 /*
 // Le type de handler de requêtes HTTP
 typedef int (*uri_handler_t)(struct http_request *req);
@@ -54,7 +56,7 @@ void add_element(uri_handler_t element){
 		// we allocate memory for our element
 		root_element = (handler_element*) malloc(sizeof(handler_element));
 		if(root_element == NULL){
-			fprintf(stderr,"[%s:Handler] Allocation Error !! Unable to allocate memory for the queue.\n","prog");
+			trace("[%s:Handler] Allocation Error !! Unable to allocate memory for the queue.\n",SERVER_NAME);
 			exit(EXIT_FAILURE);
 		}
 		root_element->tail = NULL;
@@ -65,7 +67,7 @@ void add_element(uri_handler_t element){
 		// we allocate memory for our element
 		handler_element* newElement  = (handler_element*)malloc(sizeof(handler_element));
 		if(newElement == NULL){
-			fprintf(stderr,"[%s:Handler] Allocation Error !! Unable to allocate memory for the queue.\n","prog");
+			trace("[%s:Handler] Allocation Error !! Unable to allocate memory for the queue.\n",SERVER_NAME);
 			exit(EXIT_FAILURE);
 		}
 
