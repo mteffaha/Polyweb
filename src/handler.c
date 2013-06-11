@@ -74,7 +74,7 @@ void add_element(uri_handler_t element){
  * uri_handler_t 	a function pointer to the handler to use
  */
 void handler_uri_add(uri_handler_t hdlr){
-
+	add_element(hdlr);
 }
 
 /* 
@@ -82,6 +82,9 @@ void handler_uri_add(uri_handler_t hdlr){
  * if handler return 0 continue , if 1 stops
  */
 void handler_build_response(struct http_request *req){
-
+	handler_element* current = root_element;
+	while(current != NULL && (*current->element)(req) == 0){
+		current = current->tail;
+	}
 }
 

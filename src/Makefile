@@ -10,9 +10,7 @@ CFLAGS  = -Wall -std=c99 -I../include -D_POSIX_C_SOURCE=200809L -g
 LDFLAGS = -ldl
 
 SRC     = $(wildcard *.c)
-OBJ	= 
-
-$(SRC:.c=.o)
+OBJ	= *.o #$(SRC:.c=.o)
 EXE     = polyweb
 LIB	= libpolyweb.a
 
