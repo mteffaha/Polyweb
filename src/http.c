@@ -13,7 +13,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-
+#include <stdlib.h>
 #include "polyweb.h"
 #include "network.h"
 #include "misc.h"
@@ -70,21 +70,18 @@ struct http_request* http_get_request(struct client_info *ci){
 }
 
 void http_send_response(struct client_info *ci, int code, char *msg, char* mime){
-	struct * struc_http= http_get_request(ci);
-	struc_http->uri=mime;
-
 	fprintf(ci->fout, "HTTP/1.0 %d %s\n",code,msg);
 	fprintf(ci->fout, "Connection: close\n");
 	fprintf(ci->fout, "Server: Polyweb ( version ...)\n");
 	fprintf(ci->fout, "Content-type: %s\n",mime);
-	fprintf(ci->fout, "");
+	fprintf(ci->fout, "\n");
 }
 
 
 void http_file_has_moved(struct client_info *ci, char *destination){
-	fprintf(ci.fout, "HTTP/1.0 302 File has moved\n");
-	fprintf(ci.fout, "Location : %s\n",destination);
-	fprintf(ci.fout, "");
+	fprintf(ci->fout, "HTTP/1.0 302 File has moved\n");
+	fprintf(ci->fout, "Location : %s\n",destination);
+	fprintf(ci->fout, "\n");
 }
 
 
@@ -95,8 +92,5 @@ void http_free_request(struct http_request *r){
 	if(r->info){
 		free(r->info);
 	}
-	if(r->info_length)
-		free(r->info_length);
-
 	free(r);
 }
