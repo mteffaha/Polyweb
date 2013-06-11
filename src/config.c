@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-extern struct optio_action options[];
+extern struct option_action options[];
 
 // Ajouter les nouvelles options contenues dans le tableau "actions".
 // Ces actions s'ajoutent aux actions déjà connues du système.
@@ -20,7 +20,7 @@ void config_register(struct option_action *actions){
 	}
 	//ici options[cpt].command = NULL
 	//c'est donc ici qu'il faut rajouter nos actions
-	int i=0
+	int i=0;
 	//parcourt des actions a ajouter
 	while(!(actions[i].command == NULL)){
 		options[cpt].command = actions[i].command;
