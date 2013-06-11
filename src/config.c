@@ -60,17 +60,17 @@ void config_register(struct option_action *actions){
 // Noter que les espaces avant et après la valeur de l'option ne font
 // pas partie de la valeur de l'option
 void config_read_file(const char* pathname, struct option_action *actions){
-	char *fichier_configuration;
-	if(pathname == NULL){
-		fichier_configuration = DFLT_CONFIG_FILE;
-	}else{
-		fichier_configuration = pathname;
-	}
-	char buff[CONFIG_MAX_LENGTH];
+	
+	char *buff = calloc(sizeof(char), CONFIG_MAX_LENGTH) ;
 	int fd,n;
+	char *nom_commande = calloc(sizeof(char), 50);
+	char *arguments = calloc(sizeof(char), CONFIG_MAX_LENGTH*2);
+	char *temp = calloc(sizeof(char), CONFIG_MAX_LENGTH);
+	int continuer=0;
+	char *ligne_sans_commentaire = calloc(sizeof(char), CONFIG_MAX_LENGTH);
 
 	//ouverture du fichier de configuration.
-  	if ((fd=open(fichier_configuration, O_RDONLY)) == -1){
+  	if ((fd=open(pathname, O_RDONLY)) == -1){
     		perror("Ouverture fichier de configuration.");
     		exit(1);
   	}
@@ -80,22 +80,22 @@ void config_read_file(const char* pathname, struct option_action *actions){
       			exit(1);
     		}
 		//on separe la ligne en 2 (avant et apres commentaire
-		char *ligne_sans_commentaire = strtok(buff, "#");
+		ligne_sans_commentaire = strtok(buff, "#");
 
 
 		//1er appel de strtok -> commande, tous les autres = arguments
 		//tableau de taille nombre d'option +1 pour la commande        
-        	char *nom_commande;
-		char *arguments;
-		char *temp;
-		int continuer=0;
+        	
 		nom_commande = strtok(ligne_sans_commentaire, " ");
 		
 		//recuperation des arguments dans la chaine arguments.
         	while(continuer == 0){
-			if((temp = strcat(strtok(NULL, " ")," "))==NULL){
-				arguments = strcat(arguments,temp);
+			if((temp =strtok(NULL, " "))==NULL){
 				continuer=1;
+			}
+			else{
+				temp=strcat(temp, " ");
+				arguments = strcat(arguments,temp);
 			}
 		}
 
@@ -110,5 +110,10 @@ void config_read_file(const char* pathname, struct option_action *actions){
 			i++;
 		}
 	}
+	free(buff);
+	free(nom_commande);
+	free(arguments);
+	free(temp);
+	free(ligne_sans_commentaire);
 	close(fd);
 }
