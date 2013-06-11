@@ -16,6 +16,18 @@
 typedef int (*uri_handler_t)(struct http_request *req);
 */
 
+/*
+ * HTTP 404 error handler
+ *
+ * the last resort handler that will return a 404 error
+ */
+ int handler_404Error(struct http_request *req){
+	FILE* out = req->ci->fout;
+
+	fprintf(out,"%s 404 Not Found\n",req->protocol);
+	fprintf(out,"Content-Type: text/html\n\n");
+	fprintf(out,"<!doctype html>\n<head>\n\t<title>404 Not Found</title>\n</head>\n<body>\n<h1>404 Not Found</h1>\n<p>The requiest ressource was not found</p>\n</body>\n</html>\n");
+ }
 
 /*
  * a structure representing a element in handler queue
@@ -29,10 +41,6 @@ typedef struct _handler_element{
 handler_element* root_element = NULL; // the root element, the first element to be called
 
 
-// TODO : DELETE THIS ONCE TEST DONE
-handler_element* getRoot(){
-	return root_element;
-}
 
 
 /*
@@ -50,7 +58,9 @@ void add_element(uri_handler_t element){
 			exit(EXIT_FAILURE);
 		}
 		root_element->tail = NULL;
-		root_element->element = element; // TODO : Check for memory leaks
+		root_element->element = handler_404Error; 
+		// TODO : Check for memory leaks
+		add_element(element);
 	}else{ // if a new Element but not the last one
 		// we allocate memory for our element
 		handler_element* newElement  = (handler_element*)malloc(sizeof(handler_element));
