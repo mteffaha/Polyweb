@@ -10,7 +10,11 @@ CFLAGS  = -Wall -std=c99 -I../include -D_POSIX_C_SOURCE=200809L -g
 LDFLAGS = -ldl
 
 SRC     = $(wildcard *.c)
+<<<<<<< HEAD
 OBJ	= http.o $(SRC:.c=.o)
+=======
+OBJ	= $(SRC:.c=.o)
+>>>>>>> cbedbee82032e704ba2bd5c8ad7b3bb471329c0d
 EXE     = polyweb
 LIB	= libpolyweb.a
 
@@ -21,7 +25,7 @@ $(EXE): $(LIB)
 	$(CC) -rdynamic -o $(EXE) $(LIB) $(LDFLAGS)
 $(LIB): $(OBJ)
 	rm -f $(LIB)
-	ar cq $(LIB) $(OBJ)
+	ar cq $(LIB) $(OBJ) config.o misc.o mimetype.o handler.o 
 
 clean:
 	rm -f $(OBJ) $(LIB) $(EXE) *~
