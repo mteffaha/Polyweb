@@ -14,7 +14,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdlib.h>
-#include "polyweb.h"
+
 #include "network.h"
 #include "misc.h"
 #include "http.h"
@@ -23,7 +23,7 @@ struct http_request* http_get_request(struct client_info *ci){
 	struct http_request *struc_http;
 	struc_http=malloc(sizeof(*struc_http)+50*sizeof(struct http_info));
 	struc_http->ci=ci;
-	FILE*fi=fopen("fichier.txt", "r"); 
+
 	char chaine[500]="";
 	char chaineFin[500]="";
 	char *pointeur;
@@ -32,7 +32,7 @@ struct http_request* http_get_request(struct client_info *ci){
 	int ptInterro = 0;
 	int i=0;
 
-	while(strcmp(fgets(chaine,sizeof(chaine),fi),"\n") && (nbHeaders <=50)  ){
+	while(strcmp(fgets(chaine,sizeof(chaine),ci->fin),"\r\n") && (nbHeaders <=50)  ){
 		strcat(chaineFin, chaine );
 	}
 
@@ -86,11 +86,6 @@ void http_file_has_moved(struct client_info *ci, char *destination){
 
 
 void http_free_request(struct http_request *r){
-	if(r->ci){
-		free(r->ci);
-	}
-	if(r->info){
-		free(r->info);
-	}
+
 	free(r);
 }
