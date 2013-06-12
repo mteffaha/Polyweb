@@ -1,4 +1,4 @@
-# Makefile pour le projet SI3 -- Serveur Web
+#Makefile pour le projet SI3 -- Serveur Web
 #
 #          Author: Erick Gallesio [eg@unice.fr]
 #    Creation date: 22-Apr-2013 12:19 (eg)
@@ -10,7 +10,7 @@ CFLAGS  = -Wall -std=c99 -I../include -D_POSIX_C_SOURCE=200809L -g
 LDFLAGS = -ldl
 
 SRC     = $(wildcard *.c)
-OBJ	= http.o mimetype.o config.o $(SRC:.c=.o)
+OBJ	= http.o $(SRC:.c=.o)
 EXE     = polyweb
 LIB	= libpolyweb.a
 
