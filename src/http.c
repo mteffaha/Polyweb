@@ -5,7 +5,7 @@
  *
  *           Author: Paul Lavoine
  *    Creation date: 10-Juin-2013 
- *    Last file update: 
+ *    Last file update:     
  */
 
 #include <stdio.h>
