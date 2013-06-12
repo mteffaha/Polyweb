@@ -172,6 +172,8 @@ void module_load(const char *name){
 }
 
 int is_dir(const char *dir){
+	if(dir == NULL)
+		return 0;
 	struct stat statbuf;
    	stat(dir, &statbuf);
    	return S_ISDIR(statbuf.st_mode);
