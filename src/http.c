@@ -21,51 +21,40 @@
 
 struct http_request* http_get_request(struct client_info *ci){
 	struct http_request *struc_http;
-	struc_http=malloc(sizeof(*struc_http)+50*sizeof(struct http_info));
-	struc_http->ci=ci;
-
-	char chaine[500]="";
-	char chaineFin[500]="";
-	char *pointeur;
+	struc_http=malloc(sizeof(*struc_http)+MAX_HTTP_INFO*sizeof(struct http_info));
+	struc_http->ci =ci;
+	char chaine[MAX_HTTP_REQUEST_LINE];
 	int copy=0;
 	int nbHeaders=0;
-	int ptInterro = 0;
-	int i=0;
+	char *pointeur = fgets(chaine,sizeof(chaine),ci->fin);
 
-	while(strcmp(fgets(chaine,sizeof(chaine),ci->fin),"\r\n") && (nbHeaders <=50)  ){
-		strcat(chaineFin, chaine );
-	}
-
-	if(copy ==0){//Pour remplir la première ligne de la requète	
-		struc_http->method=strtok(chaineFin," ");
-		pointeur = strtok(NULL," ");
-		struc_http->protocol=strtok(NULL,"\n");
-	}
+	while(strcmp(pointeur,"\r\n") != 0 && (nbHeaders <=MAX_HTTP_INFO)  ){
 		
-	while((struc_http->info->tag= strtok(NULL,": ")) != NULL ){
-		struc_http->info->value=strtok(NULL,"\n");
-		nbHeaders++;
+		if(copy==1){
+			struc_http->info[nbHeaders].tag= strdup(strtok(chaine,": "));
+			struc_http->info[nbHeaders].value = strdup(strtok(NULL,"\n"));
+			nbHeaders++;
+		}
+
+		if(copy ==0){	
+			struc_http->method=strdup(strtok(chaine," "));
+			struc_http->uri=strdup(strtok(NULL," "));
+			struc_http->protocol=strdup(strtok(NULL,"\n"));
+			copy=1;
+		}
+		pointeur = fgets(chaine,sizeof(chaine),ci->fin);
 	}
 
-	if(copy==0){
-		while(pointeur[i]!=' '){//A la recherche du Query-string
-			if(pointeur[i]=='?'){
-				ptInterro =1;
-			}
-			i++;//Position de la fin de chaine URI + Query String
-		}
-		if(ptInterro ==1){//S'il y a un query string
-			struc_http->uri=strtok(pointeur,"?");
-			struc_http->query_string=strtok(NULL,"\n");
-		}
-		else{//S'il y a pas de Query String
-			struc_http->uri=pointeur;
-			struc_http->query_string=NULL;
-		}	
-		copy=1;
+	if(strstr(struc_http->uri , "?") != NULL){
+		struc_http->uri = strdup(strtok(struc_http->uri,"?"));
+		struc_http->query_string = strdup(strtok(NULL,"\n"));
+	}
+	else{
+		struc_http->query_string = NULL;
 	}	
 
 	struc_http->info_length=nbHeaders;
+
 	return struc_http;
 }
 
