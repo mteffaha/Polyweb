@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-extern struct optio_action options[];
+extern struct option_action options[];
 
 // Ajouter les nouvelles options contenues dans le tableau "actions".
 // Ces actions s'ajoutent aux actions déjà connues du système.
@@ -20,7 +20,7 @@ void config_register(struct option_action *actions){
 	}
 	//ici options[cpt].command = NULL
 	//c'est donc ici qu'il faut rajouter nos actions
-	int i=0
+	int i=0;
 	//parcourt des actions a ajouter
 	while(!(actions[i].command == NULL)){
 		options[cpt].command = actions[i].command;
@@ -60,55 +60,75 @@ void config_register(struct option_action *actions){
 // Noter que les espaces avant et après la valeur de l'option ne font
 // pas partie de la valeur de l'option
 void config_read_file(const char* pathname, struct option_action *actions){
-	char *fichier_configuration;
-	if(pathname == NULL){
-		fichier_configuration = DFLT_CONFIG_FILE;
-	}else{
-		fichier_configuration = pathname;
-	}
-	char buff[CONFIG_MAX_LENGTH];
-	int fd,n;
+	FILE *fd;
+	int n;
+	
+	char *buff = calloc(sizeof(char), CONFIG_MAX_LENGTH) ;
+	char *nom_commande = calloc(sizeof(char), CONFIG_MAX_LENGTH);
+	char *arguments = calloc(sizeof(char), CONFIG_MAX_LENGTH*6);
+	char *temp = calloc(sizeof(char), CONFIG_MAX_LENGTH/2);
+	char *ligne_sans_commentaire = calloc(sizeof(char), CONFIG_MAX_LENGTH);
 
+
+
+	printf("path: %s\n", pathname);
 	//ouverture du fichier de configuration.
-  	if ((fd=open(fichier_configuration, O_RDONLY)) == -1){
+  	if ((fd=fopen(pathname, "r")) == NULL){
     		perror("Ouverture fichier de configuration.");
     		exit(1);
   	}
-	while ((n = read(fd, buff, CONFIG_MAX_LENGTH)) > 0) {
+	//printf("fichier de configuration trouve.");
+	
+	while ((n = fgets(buff, CONFIG_MAX_LENGTH, fd)) > 0) {
 		if (n < 0) {
       			perror("Lecture dans le fichier de config.");
       			exit(1);
     		}
+		//printf("le read : %s\n", buff);
 		//on separe la ligne en 2 (avant et apres commentaire
-		char *ligne_sans_commentaire = strtok(buff, "#");
+		if(buff[0]!='#'){
 
-
-		//1er appel de strtok -> commande, tous les autres = arguments
-		//tableau de taille nombre d'option +1 pour la commande        
-        	char *nom_commande;
-		char *arguments;
-		char *temp;
-		int continuer=0;
-		nom_commande = strtok(ligne_sans_commentaire, " ");
-		
-		//recuperation des arguments dans la chaine arguments.
-        	while(continuer == 0){
-			if((temp = strcat(strtok(NULL, " ")," "))==NULL){
-				arguments = strcat(arguments,temp);
-				continuer=1;
+			ligne_sans_commentaire = strtok(buff,"#");
+			//printf("ligne sans commentaire:  %s\n", ligne_sans_commentaire);
+			//printf("reste de la ligne :%s", strtok( NULL , "#"));
+			//1er appel de strtok -> commande, tous les autres = arguments
+			//tableau de taille nombre d'option +1 pour la commande        
+        	
+			nom_commande = strtok(ligne_sans_commentaire,"	 ");
+			if(nom_commande != NULL && nom_commande != " "){
+				
+				//recuperation des arguments dans la chaine arguments.
+				temp = strtok(NULL,"	 ");
+				arguments=temp;
+				if(arguments != NULL){
+        				while(temp != NULL){
+						temp = strtok(NULL,"	 ");
+						//car lors du premier tour temp peut etre egal a nul
+						if(temp!=NULL){
+							strcat(arguments," ");
+							strcat(arguments, temp);
+						}
+					}
+					//printf("nom de la commande: %s.\n", nom_commande);
+					//printf("arguments: %s.\n", arguments);
+					//parcourt du tableau d'options
+					int i=0;
+					int trouve=1;
+					while((actions[i].command != NULL) && (trouve==1)){
+						if(strcmp(actions[i].command, nom_commande) == 0){
+							trouve=0;
+							(*actions[i].func)(arguments);
+							}	
+						i++;
+					}
+				}
 			}
 		}
-
-		//parcourt du tableau d'options
-		int i=0;
-		int trouve=1;
-		while(!(actions[i].command == NULL) && (trouve==1)){
-			if(strcmp(actions[i].command, nom_commande) == 0){
-				trouve=0;
-				(*actions[i].func)(arguments);
-			}	
-			i++;
-		}
 	}
-	close(fd);
+	/*free(buff);
+	free(nom_commande);
+	free(arguments);
+	free(temp);
+	free(ligne_sans_commentaire);*/
+	fclose(fd);
 }
