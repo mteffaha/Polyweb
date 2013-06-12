@@ -35,8 +35,10 @@ typedef int (*uri_handler_t)(struct http_request *req);
 	
 	FILE* out = req->ci->fout;
 
-	fprintf(out,"%s 404 Not Found\n",req->protocol);
+	/*fprintf(out,"%s 404 Not Found\n",req->protocol);
 	fprintf(out,"Content-Type: text/html\n\n");
+	*/
+	http_send_response(req->ci,404,"Not Found","text/html");	
 	fprintf(out,"<!doctype html>\n<head>\n\t<title>404 Not Found</title>\n</head>\n<body>\n<h1>404 Not Found</h1>\n<p>The requested ressource was not found</p>\n</body>\n</html>\n");
 	return 1;
  }
@@ -70,7 +72,6 @@ int handler_FileExplorer(struct http_request *req){
 
 	// we start printing the header
 	http_send_response(req->ci, 200, "Ok", "text/html");
-	//fprintf(req->ci->fout,"%s 200 OK\nContent-Type: text/html\n\n",req->protocol);
 	fprintf(req->ci->fout,"<!doctype html>\n<head>\n\t<title>%s : File Exlorer</title>\n",SERVER_NAME);
 	fprintf(req->ci->fout,"<style type=\"text/css\">"); 
 	fprintf(req->ci->fout,"h1{font-family:verdana;font-size:20pt;margin:20px;}\ndiv{width:960px;margin:auto;}table{width:100%;}table thead{background-color:#EEEEEE;}");
