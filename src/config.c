@@ -1,11 +1,11 @@
 #include "config.h"
 #include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 extern struct option_action options[];
 
@@ -61,52 +61,57 @@ void config_register(struct option_action *actions){
 // pas partie de la valeur de l'option
 void config_read_file(const char* pathname, struct option_action *actions){
 	FILE *fd;
-	int n;
 	
 	char *buff = calloc(sizeof(char), CONFIG_MAX_LENGTH) ;
 	char *nom_commande = calloc(sizeof(char), CONFIG_MAX_LENGTH);
 	char *arguments = calloc(sizeof(char), CONFIG_MAX_LENGTH*6);
 	char *temp = calloc(sizeof(char), CONFIG_MAX_LENGTH/2);
 	char *ligne_sans_commentaire = calloc(sizeof(char), CONFIG_MAX_LENGTH);
-
+	char *pointeur;
 
 
 	printf("path: %s\n", pathname);
 	//ouverture du fichier de configuration.
   	if ((fd=fopen(pathname, "r")) == NULL){
-    		perror("Ouverture fichier de configuration.");
+    		perror("Ouverture fichier de configuration.\n");
     		exit(1);
   	}
 	//printf("fichier de configuration trouve.");
 	
-	while ((n = fgets(buff, CONFIG_MAX_LENGTH, fd)) > 0) {
-		if (n < 0) {
-      			perror("Lecture dans le fichier de config.");
-      			exit(1);
-    		}
+	while (fgets(buff, CONFIG_MAX_LENGTH, fd) > 0) {
+		
 		//printf("le read : %s\n", buff);
 		//on separe la ligne en 2 (avant et apres commentaire
 		if(buff[0]!='#'){
 
-			ligne_sans_commentaire = strtok(buff,"#");
+			ligne_sans_commentaire = strtok(buff,"#\n");
 			//printf("ligne sans commentaire:  %s\n", ligne_sans_commentaire);
 			//printf("reste de la ligne :%s", strtok( NULL , "#"));
 			//1er appel de strtok -> commande, tous les autres = arguments
 			//tableau de taille nombre d'option +1 pour la commande        
         	
-			nom_commande = strtok(ligne_sans_commentaire,"	 ");
+			nom_commande = strtok(ligne_sans_commentaire,"\t \n");
+
+
 			if(nom_commande != NULL && nom_commande != " "){
 				
 				//recuperation des arguments dans la chaine arguments.
-				temp = strtok(NULL,"	 ");
-				arguments=temp;
+				temp = strtok(NULL,"\t \n");
+				if(temp!=NULL){
+					strcpy(arguments,temp);
+				}
 				if(arguments != NULL){
         				while(temp != NULL){
-						temp = strtok(NULL,"	 ");
+						temp =strtok(NULL,"\t ");
+						//printf("temp %s\n", temp);
 						//car lors du premier tour temp peut etre egal a nul
 						if(temp!=NULL){
+							//printf("arg sans strcat: %s\n", arguments);
 							strcat(arguments," ");
-							strcat(arguments, temp);
+							//printf("temp(entre) %s\n", temp);
+							//printf("arg(entre) %s\n", arguments);
+							strcat(arguments,temp);
+							//printf("arg avec strcat: %s\n", arguments);
 						}
 					}
 					//printf("nom de la commande: %s.\n", nom_commande);
@@ -117,6 +122,8 @@ void config_read_file(const char* pathname, struct option_action *actions){
 					while((actions[i].command != NULL) && (trouve==1)){
 						if(strcmp(actions[i].command, nom_commande) == 0){
 							trouve=0;
+							//printf("commande action: %s\n", actions[i].command);
+							//printf("nom_commande: %s\n", nom_commande);
 							(*actions[i].func)(arguments);
 							}	
 						i++;
