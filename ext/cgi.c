@@ -144,10 +144,16 @@ cgi_env* init_cgi_env(struct http_request* req){
  * the handler function that will be hooked (Added to the list of available handlers)to the server
  */
 int handler_cgi(struct http_request* req){
+	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
+	sprintf(path,"%s/%s",req->uri,document_root);
+
+	// we check that this is an executable, and that have access
+	if(!is_exec(path)){
+		return 0;
+	}
 	// we start by fetching the envirement variables
 	cgi_env* env = init_cgi_env(req);
-	//PRINT_ENV(env);
-	return 0;
+	return 1;
 }
 
 void init_module(void){
