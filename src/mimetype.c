@@ -2,58 +2,59 @@
 #include <string.h>
 #include <assert.h>
 
-#define MEM_LINE_SIZE   64
+typedef struct mimetype 
+{
+	char	*extension;
+	char	*mime;
+	struct	mimetype *next;
+}mimetype_list;
 
-char *mimetype_find(char *path);
-char *read_str(FILE **stream, char *str);
-void mimetype_new_rule(char* rule);
-char type[10000]="html text/html jpg image/jpeg jpeg image/jpeg gif image/gif pdf application/pdf ";
-void mimetype_new_rule(char* rule);
+mimetype_list	*list = NULL;
 
 void mimetype_new_rule(char* rule)
 {
-	strcat(type, rule);
+	mimetype_list *new;
+	new = malloc(sizeof(*new));
+	if (new == NULL)
+	{
+		perror("malloc");
+        exit(1);
+	}
+    if (strstr(rule, " ") == NULL)
+    return ;
+    new->extension = strtok(strdup(rule), " ");
+    new->mime = strtok(NULL, " ");
+    new->next = list;
+    list = new;
 }
 
 
 char *mimetype_find(char *path)
 {
-   
-    char *point_pos = path;
-    char *file_name_tail = &path[strlen(path) - 1];
-   
-    while (*point_pos != '.' && point_pos != file_name_tail)
-        point_pos++;
-        
-   
-    if ((*point_pos == '.') && (point_pos != path) && (point_pos != file_name_tail))
+	char *extension;
+    int n = strlen(path) - 1;
+    mimetype_list *head;
+	while (path[n] != '.' && n >= 0)
+		n--;
+
+    if (n < 0)
+		return "text/plain";
+    n++;
+	
+    extension = malloc((strlen(path) - n + 1) * sizeof(*extension));
+    strncpy(extension, &(path[n]), strlen(path) - n);
+    head = list;
+    while (head != NULL)
     {
-        char ext_name[10];
-       
-        strcpy(ext_name, (point_pos + 1));
-        if(!strstr(type,ext_name))
-        return "text/plain\n";
-        else
-        {
-			char *c;
-			c= strstr(type, ext_name);
-			char *end=c;
-			while(*end!=' ')
-			{
-				end++;
-				c++;
-			}
-			c++;
-			end++;
-			while(*end!=' ')
-			{
-				end++;
-			}
-		char *d=strtok(c," ");
-		return d;
-		}
-	}
-       
-    else   
-    return "text/plain\n";
+		if (strcmp(head->extension, extension) == 0)
+			return head->mime;
+		head = head->next;
+    }
+    return "text/plain";
+}
+
+int main(){
+	mimetype_new_rule("jpg image/jpeg");
+	mimetype_new_rule("pdf application/jpg");
+	printf("%s",mimetype_find("a.jpg"));
 }
