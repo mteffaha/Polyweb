@@ -21,11 +21,24 @@
 #include "handler.h"
 #include "misc.h"
 #include "polyweb.h"
-/*
-// Le type de handler de requêtes HTTP
-typedef int (*uri_handler_t)(struct http_request *req);
-*/
+#include "mimetype.h"
 
+
+#define MAX_FILE_BUFFER 8192
+/*
+ * Function for converting file size into readable content.
+ * Source : http://programanddesign.com/cpp/human-readable-file-size-in-c/
+ */
+char* readable_fs(double size/*in bytes*/, char *buf) {
+    int i = 0;
+    const char* units[] = {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    while (size > 1024) {
+        size /= 1024;
+        i++;
+    }
+    sprintf(buf, "%.*f %s", i, size, units[i]);
+    return buf;
+}
 /*
  * HTTP 404 error handler
  *
@@ -42,6 +55,53 @@ typedef int (*uri_handler_t)(struct http_request *req);
 	fprintf(out,"<!doctype html>\n<head>\n\t<title>404 Not Found</title>\n</head>\n<body>\n<h1>404 Not Found</h1>\n<p>The requested ressource was not found</p>\n</body>\n</html>\n");
 	return 1;
  }
+ 
+ int handler_MimePrinter(struct http_request *req){
+	printf("MimePrinter\n");
+ 	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
+ 	if(strcmp(req->uri,"/")!=0){
+		sprintf(path,"%s/%s",document_root,req->uri);
+	}else{
+		sprintf(path,"%s",document_root);
+	}
+	
+	// If a file handle it as such
+	if( access(path, F_OK ) != -1 && !is_dir(path) ) {
+    		char* mime = mimetype_find(path);
+    		char str[MAX_FILE_BUFFER];
+    		FILE* file = fopen(path,"r");
+    		http_send_response(req->ci,200,"Ok",mime);
+    		while(fgets(str,MAX_FILE_BUFFER,file)!=NULL){
+    			fprintf(req->ci->fout,"%s",str);
+    		}
+    		return 1;
+	}else{
+		struct dirent** pdir;
+		int n = scandir(path, &pdir, 0, alphasort);
+		while(n--){
+			// we convert the name to an all lowercase
+			//for(char *p = pdir[n]->d_name;*p;++p) *p=*p>0x40&&*p<0x5b?*p|0x60:*p;
+			
+			// if we have an index.html
+			if(strcmp("index.html",pdir[n]->d_name)==0){
+				char* index = calloc(sizeof(char),strlen(path)+strlen(pdir[n]->d_name)+2);
+				char str[MAX_FILE_BUFFER];
+				
+    				http_send_response(req->ci,200,"Ok","text/html");
+				sprintf(index,"%s/%s",path,pdir[n]->d_name);
+				FILE* file = fopen(index,"r");
+				while(fgets(str,MAX_FILE_BUFFER,file)!=NULL){
+					fprintf(req->ci->fout,"%s",str);
+				}
+				return 1;
+					
+			}			
+		}
+		
+		
+	}
+	return 0;
+ }
 
 /*
  * FileExplorer handler
@@ -49,6 +109,7 @@ typedef int (*uri_handler_t)(struct http_request *req);
  * a handler that allows the user to navigate the files available in the server.
  */
 int handler_FileExplorer(struct http_request *req){
+	printf("File Explorer\n");
 	// we start by checking that the query correspond to a valid path relative to the document root
 	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
 	if(path == NULL){
@@ -72,11 +133,11 @@ int handler_FileExplorer(struct http_request *req){
 
 	// we start printing the header
 	http_send_response(req->ci, 200, "Ok", "text/html");
-	fprintf(req->ci->fout,"<!doctype html>\n<head>\n\t<title>%s : File Exlorer</title>\n",SERVER_NAME);
+	fprintf(req->ci->fout,"<!doctype html>\n<head>\n\t<title>%s : %s</title>\n",SERVER_NAME,req->uri);
 	fprintf(req->ci->fout,"<style type=\"text/css\">"); 
-	fprintf(req->ci->fout,"h1{font-family:verdana;font-size:20pt;margin:20px;}\ndiv{width:960px;margin:auto;}table{width:100%;}table thead{background-color:#EEEEEE;}");
+	fprintf(req->ci->fout,"h1{font-family:verdana;font-size:20pt;margin:20px;}\ndiv{width:960px;margin:auto;}table{width:100%%;border-bottom:solid 1px gray;}table thead{background-color:#EEEEEE;}");
 	fprintf(req->ci->fout,"table td{padding:10px;text-align;left;}" );
-	fprintf(req->ci->fout,"</style></head>\n<body>\n<div><h1>%s : File Explorer</h1><table><thead><tr><td>Name</td><td>Type</td><td>Last Modified</td><td>Size</td></tr></thead><tbody>",SERVER_NAME);
+	fprintf(req->ci->fout,"</style></head>\n<body>\n<div><h1>%s : File Explorer</h1><table><thead><tr><td>Name</td><td></td><td>Last Modified</td><td>Size</td></tr></thead><tbody>",SERVER_NAME);
 
 
 	n = scandir(path, &pdir, 0, alphasort);
@@ -119,17 +180,18 @@ int handler_FileExplorer(struct http_request *req){
 		file = NULL;
 		if(S_ISDIR(stbuf.st_mode)){
 			if(strlen(req->uri) > 1){
-				fprintf(req->ci->fout,"<a href=\"%s/%s\">%s</a></td><td>Folder</td>",req->uri,pdir[i]->d_name,pdir[i]->d_name);
+				fprintf(req->ci->fout,"<a href=\"%s/%s\">%s</a></td><td> [Dir] </td>",req->uri,pdir[i]->d_name,pdir[i]->d_name);
 			}else{
-				fprintf(req->ci->fout,"<a href=\"/%s\">%s</a></td><td>Folder</td>",pdir[i]->d_name,pdir[i]->d_name);
+				fprintf(req->ci->fout,"<a href=\"/%s\">%s</a></td><td> [Dir] </td>",pdir[i]->d_name,pdir[i]->d_name);
 			}
 		}else{
-			fprintf(req->ci->fout,"%s</td><td>File</td>",pdir[i]->d_name);
+			fprintf(req->ci->fout,"%s</td><td> -- </td>",pdir[i]->d_name);
 		}
 		
 		strftime(timebuff, 20, "%d-%m-%Y %H:%M:%S", localtime(&stbuf.st_mtime));
 		fprintf(req->ci->fout,"<td>%s</td>",timebuff);
-		fprintf(req->ci->fout,"<td>%d</td></tr>",(int)stbuf.st_size);
+		char* buf = calloc(sizeof(char),500);
+		fprintf(req->ci->fout,"<td>%s</td></tr>",readable_fs((double)stbuf.st_size,buf));
 		i++;
 			
 	}
@@ -172,6 +234,8 @@ void add_element(uri_handler_t element){
 		root_element->element = handler_404Error; 
 		// TODO : Check for memory leaks
 		add_element(handler_FileExplorer);
+		
+		add_element(handler_MimePrinter);
 		add_element(element);
 	}else{ // if a new Element but not the last one
 		// we allocate memory for our element
@@ -196,6 +260,7 @@ void add_element(uri_handler_t element){
  * uri_handler_t 	a function pointer to the handler to use
  */
 void handler_uri_add(uri_handler_t hdlr){
+	printf("Adding element\n");
 	add_element(hdlr);
 }
 

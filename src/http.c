@@ -18,6 +18,7 @@
 #include "network.h"
 #include "misc.h"
 #include "http.h"
+#include "polyweb.h"
 
 struct http_request* http_get_request(struct client_info *ci){
 	struct http_request *struc_http;
