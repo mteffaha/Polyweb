@@ -48,10 +48,9 @@ void serve_page(int server){
       /* Construire une réponse en parcourant tous les handlers */
       handler_build_response(req);
 
-	printf("before free_request\n");
+
       /* Libérer la mémoire */
       http_free_request(req);
-      printf("after free request\n");
     }
 
     tracen(3, "Connection with %s closed.\n", ci.hostname);

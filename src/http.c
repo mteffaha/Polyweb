@@ -86,6 +86,24 @@ void http_file_has_moved(struct client_info *ci, char *destination){
 
 
 void http_free_request(struct http_request *r){
+	int i=0;
 
+	if(r->method != NULL){
+		free(r->method);
+	}
+	if(r->uri != NULL){
+		free(r->uri);
+	}
+	if(r->query_string != NULL){
+		free(r->query_string);
+	}
+	for(i=0;i<r->info_length;i++){
+		if(r->info[i].tag != NULL)
+			free(r->info[i].tag);
+		if(r->info[i].value != NULL)
+			free(r->info[i].value);
+		
+	}
+	
 	free(r);
 }
