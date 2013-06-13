@@ -57,12 +57,11 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
  }
  
  int handler_MimePrinter(struct http_request *req){
-	printf("MimePrinter\n");
  	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
  	if(strcmp(req->uri,"/")!=0){
 		sprintf(path,"%s/%s",document_root,req->uri);
 	}else{
-		sprintf(path,"%s",document_root);
+		sprintf(path,"%s/",document_root);
 	}
 	
 	// If a file handle it as such
@@ -77,10 +76,11 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
     		return 1;
 	}else{
 		struct dirent** pdir;
+		
 		int n = scandir(path, &pdir, 0, alphasort);
 		while(n--){
 			// we convert the name to an all lowercase
-			//for(char *p = pdir[n]->d_name;*p;++p) *p=*p>0x40&&*p<0x5b?*p|0x60:*p;
+			for(char *p = pdir[n]->d_name;*p;++p) *p=*p>0x40&&*p<0x5b?*p|0x60:*p;
 			
 			// if we have an index.html
 			if(strcmp("index.html",pdir[n]->d_name)==0){
@@ -100,6 +100,7 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
 		
 		
 	}
+	
 	return 0;
  }
 
@@ -260,7 +261,6 @@ void add_element(uri_handler_t element){
  * uri_handler_t 	a function pointer to the handler to use
  */
 void handler_uri_add(uri_handler_t hdlr){
-	printf("Adding element\n");
 	add_element(hdlr);
 }
 
@@ -269,6 +269,12 @@ void handler_uri_add(uri_handler_t hdlr){
  * if handler return 0 continue , if 1 stops
  */
 void handler_build_response(struct http_request *req){
+	if(root_element == NULL){
+		add_element(NULL);
+		handler_element* tmp = root_element->tail;
+		free(root_element);
+		root_element = tmp;
+	}
 	handler_element* current = root_element;
 	while(current != NULL && (*current->element)(req) == 0){
 		current = current->tail;

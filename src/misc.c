@@ -89,6 +89,20 @@ void parseNumber(const char* val,int* number){
 void set_document_root(const char *val){
 
 	safeCopyString(&document_root,val);
+	printf("Val : %s\n",val);
+	if(document_root == NULL){
+		
+		trace("[%s:misc] null document_root passed\n",SERVER_NAME);
+	}
+	int i=0;
+	while(document_root[i] != '\0'){
+		if(document_root[i] == '\n'){
+			document_root[i] = '\0';
+			break;
+		}
+		i++;
+	}
+	return;
 }
 
 

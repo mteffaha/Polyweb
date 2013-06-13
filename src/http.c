@@ -32,26 +32,36 @@ struct http_request* http_get_request(struct client_info *ci){
 	while(strcmp(pointeur,"\r\n") != 0 && (nbHeaders <=MAX_HTTP_INFO)  ){
 		
 		if(copy==1){
-			struc_http->info[nbHeaders].tag= strdup(strtok(chaine,": "));
-			struc_http->info[nbHeaders].value = strdup(strtok(NULL,"\n"));
+			char* item = strtok(chaine,": ");
+			if(item == NULL)
+			continue;
+			struc_http->info[nbHeaders].tag= strdup((item != NULL)?item:"");
+			item = strtok(NULL,"\n");
+			struc_http->info[nbHeaders].value = strdup((item != NULL)?item:"");
 			nbHeaders++;
 		}
 
 		if(copy ==0){	
-			struc_http->method=strdup(strtok(chaine," "));
-			struc_http->uri=strdup(strtok(NULL," "));
-			struc_http->protocol=strdup(strtok(NULL,"\n"));
+			char* item = strtok(chaine," ");
+			struc_http->method=strdup((item!=NULL)?item:"");
+			item = strtok(NULL," ");
+			struc_http->uri=strdup((item!=NULL)?item:"");
+			item = strtok(NULL,"\n");
+			struc_http->protocol=strdup((item!=NULL)?item:"");
+			
 			copy=1;
 		}
 		pointeur = fgets(chaine,sizeof(chaine),ci->fin);
 	}
 
 	if(strstr(struc_http->uri , "?") != NULL){
-		struc_http->uri = strdup(strtok(struc_http->uri,"?"));
-		struc_http->query_string = strdup(strtok(NULL,"\n"));
+		char* item = strtok(struc_http->uri,"?");
+		struc_http->uri = strdup((item!=NULL)?item:"");
+		item = strtok(NULL,"\n");
+		struc_http->query_string = strdup((item!=NULL)?item:"");
 	}
 	else{
-		struc_http->query_string = NULL;
+		struc_http->query_string = calloc(sizeof(char),1);
 	}	
 
 	struc_http->info_length=nbHeaders;
