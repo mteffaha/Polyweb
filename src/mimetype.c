@@ -17,14 +17,15 @@ void mimetype_new_rule(char* rule){
 
 	char extension_tmp[PATH_MAX];
 	strcpy(extension_tmp, rule);
-
 	char *extension = strtok(extension_tmp, " \t");
-	char *mime  = strtok(NULL, " \t");
+	char *mime  =  strtok(NULL, " \t");
+	mime = (mime == NULL)?"":mime;
 	Mimetype *tmp;
 
 	for(tmp = phead;tmp != NULL; tmp = tmp->next){
 		if(strncmp(tmp->extension, extension, strlen(extension)) == 0){exit(0);}
 	}
+	
  
 	Mimetype *pnew = malloc(sizeof(Mimetype));
 	pnew->extension = malloc((strlen(extension) + 1)*sizeof(char));
