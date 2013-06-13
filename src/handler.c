@@ -110,7 +110,6 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
  * a handler that allows the user to navigate the files available in the server.
  */
 int handler_FileExplorer(struct http_request *req){
-	printf("File Explorer\n");
 	// we start by checking that the query correspond to a valid path relative to the document root
 	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
 	if(path == NULL){

@@ -21,6 +21,7 @@
 #include "polyweb.h"
 
 struct http_request* http_get_request(struct client_info *ci){
+
 	struct http_request *struc_http;
 	struc_http=malloc(sizeof(*struc_http)+MAX_HTTP_INFO*sizeof(struct http_info));
 	struc_http->ci =ci;
@@ -28,7 +29,6 @@ struct http_request* http_get_request(struct client_info *ci){
 	int copy=0;
 	int nbHeaders=0;
 	char *pointeur = fgets(chaine,sizeof(chaine),ci->fin);
-
 	while(strcmp(pointeur,"\r\n") != 0 && (nbHeaders <=MAX_HTTP_INFO)  ){
 		
 		if(copy==1){

@@ -146,7 +146,7 @@ cgi_env* init_cgi_env(struct http_request* req){
 int handler_cgi(struct http_request* req){
 	// we start by fetching the envirement variables
 	cgi_env* env = init_cgi_env(req);
-	PRINT_ENV(env);
+	//PRINT_ENV(env);
 	return 0;
 }
 

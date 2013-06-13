@@ -10,11 +10,7 @@ CFLAGS  = -Wall -std=c99 -I../include -D_POSIX_C_SOURCE=200809L -g
 LDFLAGS = -ldl
 
 SRC     = $(wildcard *.c)
-<<<<<<< HEAD
-OBJ	= http.o $(SRC:.c=.o)
-=======
 OBJ	= $(SRC:.c=.o)
->>>>>>> cbedbee82032e704ba2bd5c8ad7b3bb471329c0d
 EXE     = polyweb
 LIB	= libpolyweb.a
 
