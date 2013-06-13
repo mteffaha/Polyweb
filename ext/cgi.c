@@ -5,6 +5,7 @@
  *
  * the main file for the extension module cgi, whose responsible for implementing the Common Gateway Interface . more details in cgi.md
  */
+#define _XOPEN_SOURCE  
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -84,7 +85,6 @@ void free_cgi_env(cgi_env* env){
  * req 	the http_request 
  */
 cgi_env* init_cgi_env(struct http_request* req){
-	printf("init cgi\n");
 	// we allocate the structure
 	cgi_env* env =calloc(sizeof(cgi_env),1);
 	
@@ -139,20 +139,78 @@ cgi_env* init_cgi_env(struct http_request* req){
 	return env;
 }
 
+/*
+ * checks wether the path supplied is an executable
+ *
+ * path 	path to check
+ */
+int is_exec(char* path){
+	if(is_dir(path)){
+		return 0;
+	}
 
+	if (access(path, X_OK) != -1) {
+    		return 1;
+	} else {
+		return 0;
+	}
+}
+
+/*
+ *	Setts and envirement variable.
+ *
+ * var		the name of the variable to be set
+ * value	the value of the variable to be set
+ */
+void setvar(char* var,char*value){
+	char* buffer = calloc(sizeof(char),MAX_HTTP_REQUEST_LINE);
+	sprintf(buffer,"%s=%s",var,value);
+	putenv(buffer);
+	
+	//free(buffer);
+}
+
+/*
+ *Creates the necessary envirement variables for running a cgi script
+ * env		the cgi_env structu to set
+ */
+void prepare_env(const cgi_env* env){
+	char* clength = calloc(sizeof(char),MAX_HTTP_REQUEST_LINE);
+	sprintf(clength,"%d",env->content_length);
+	setvar("DOCUMENT_ROOT",env->document_root);
+	setvar("GATEWAY_INTERFACE",env->gateway_interface);
+	setvar("PATH",env->path);
+	setvar("QUERY_STRING",env->query_string);
+	setvar("REMOTE_ADDR",env->remote_adr);	
+	setvar("REQUEST_METHOD",env->request_method);
+	setvar("REQUEST_URI",env->request_uri);
+	setvar("SERVER_PROTOCOL",env->server_protocol);
+	setvar("SERVER_SOFTWARE",env->server_software);
+	setvar("CONTENT_TYPE",env->content_type);
+	setvar("CONTENT_LENGTH",clength);
+		
+}
 /*
  * the handler function that will be hooked (Added to the list of available handlers)to the server
  */
 int handler_cgi(struct http_request* req){
 	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
-	sprintf(path,"%s/%s",req->uri,document_root);
-
+	if(strlen(req->uri)>1){
+		sprintf(path,"%s%s",document_root,req->uri);
+	}else{ // id root directory
+		return 0;
+	}
 	// we check that this is an executable, and that have access
 	if(!is_exec(path)){
 		return 0;
 	}
+	printf("PATH : [%s],DR:[%s]\n",path,document_root);
 	// we start by fetching the envirement variables
 	cgi_env* env = init_cgi_env(req);
+	// set env variables
+	prepare_env(env);
+	// end POST DATA if available
+	printf("send POST data\n");
 	return 1;
 }
 
