@@ -1,59 +1,64 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <strings.h>
+#include <ctype.h>
+#include <limits.h>
 
-#define MEM_LINE_SIZE   64
+typedef struct Mimetype{
+	char *extension;
+	char *mime;
+	struct Mimetype *next;
+}Mimetype;
 
-char *mimetype_find(char *path);
-char *read_str(FILE **stream, char *str);
-void mimetype_new_rule(char* rule);
-char type[10000]="html text/html jpg image/jpeg jpeg image/jpeg gif image/gif pdf application/pdf ";
-void mimetype_new_rule(char* rule);
+Mimetype *phead = NULL;
 
-void mimetype_new_rule(char* rule)
-{
-	strcat(type, rule);
+void mimetype_new_rule(char* rule){
+
+	char extension_tmp[PATH_MAX];
+	strcpy(extension_tmp, rule);
+
+	char *extension = strtok(extension_tmp, " \t");
+	char *mime  = strtok(NULL, " \t");
+	Mimetype *tmp;
+
+	for(tmp = phead;tmp != NULL; tmp = tmp->next){
+		if(strncmp(tmp->extension, extension, strlen(extension)) == 0){exit(0);}
+	}
+ 
+	Mimetype *pnew = malloc(sizeof(Mimetype));
+	pnew->extension = malloc((strlen(extension) + 1)*sizeof(char));
+	pnew->mime = malloc((strlen(mime) + 1)*sizeof(char));
+	strcpy(pnew->extension, extension);
+	strcpy(pnew->mime, mime);
+	pnew->next = phead;
+	phead = pnew;
 }
 
+char *mimetype_find(const char *path){
 
-char *mimetype_find(char *path)
-{
-   
-    char *point_pos = path;
-    char *file_name_tail = &path[strlen(path) - 1];
-   
-    while (*point_pos != '.' && point_pos != file_name_tail)
-        point_pos++;
-        
-   
-    if ((*point_pos == '.') && (point_pos != path) && (point_pos != file_name_tail))
-    {
-        char ext_name[10];
-       
-        strcpy(ext_name, (point_pos + 1));
-        if(!strstr(type,ext_name))
-        return "text/plain\n";
-        else
-        {
-			char *c;
-			c= strstr(type, ext_name);
-			char *end=c;
-			while(*end!=' ')
-			{
-				end++;
-				c++;
-			}
-			c++;
-			end++;
-			while(*end!=' ')
-			{
-				end++;
-			}
-		char *d=strtok(c," ");
-		return d;
+	char *extensionBis = rindex(path, '.');
+	char path_tmp[PATH_MAX];
+	strcpy(path_tmp, extensionBis+1);
+	char *extension = strtok(path_tmp, " \t");
+	int length = strlen(extension);
+	Mimetype *tmp;
+
+	for(tmp = phead; tmp != NULL ; tmp=tmp->next){
+		if (strncmp(extension, tmp->extension, length) == 0){
+			return tmp->mime;
 		}
 	}
-       
-    else   
-    return "text/plain\n";
+ 
+	return "text/plain";
 }
+
+
+
+
+
+
+
+
+
+
