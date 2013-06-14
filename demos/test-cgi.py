@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #					-*-coding: utf-8 -*-
 #
 # test-cgi.py	-- Un programme de test de scripts CGI

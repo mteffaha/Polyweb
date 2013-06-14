@@ -33,10 +33,13 @@ struct http_request* http_get_request(struct client_info *ci){
 		
 		if(copy==1){
 			char* item = strtok(chaine,": ");
+			
 			if(item == NULL)
-			continue;
+				continue;
+				
 			struc_http->info[nbHeaders].tag= strdup((item != NULL)?item:"");
 			item = strtok(NULL,"\n");
+			
 			struc_http->info[nbHeaders].value = strdup((item != NULL)?item:"");
 			nbHeaders++;
 		}
@@ -70,11 +73,14 @@ struct http_request* http_get_request(struct client_info *ci){
 }
 
 void http_send_response(struct client_info *ci, int code, char *msg, char* mime){
+	
 	fprintf(ci->fout, "HTTP/1.0 %d %s\n",code,msg);
 	fprintf(ci->fout, "Connection: close\n");
 	fprintf(ci->fout, "Server: %s\n",SERVER_FULL_NAME);
+	if(strlen(mime) > 0){
 	fprintf(ci->fout, "Content-type: %s\n",mime);
 	fprintf(ci->fout, "\n");
+	}
 }
 
 

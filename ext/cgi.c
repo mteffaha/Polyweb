@@ -23,6 +23,7 @@
 #define CGI_PATH	"/bin:/usr/bin:/usr/local/bin"
 #define SERVER_PROTOCOL "HTTP/1.0"
 #define PRINT_ENV(ENV)	print_cgi_env(ENV,stdout)
+#define MAX_BUFFER_SIZE 8192
 
 /*
  * a struct containing all cgi envirement variables
@@ -123,7 +124,7 @@ cgi_env* init_cgi_env(struct http_request* req){
 	
 	// we check if they were set in the http_info structure, and copy the corresponding values
 	while(infos-- >=0){
-		if(strcmp(req->info[infos].tag,"Content-length") == 0){
+		if(strcmp(req->info[infos].tag,"Content-Length") == 0){
 			env->content_length = atoi(req->info[infos].value);
 			continue;
 		}
@@ -162,39 +163,70 @@ int is_exec(char* path){
  * var		the name of the variable to be set
  * value	the value of the variable to be set
  */
-void setvar(char* var,char*value){
+char* setvar(char* var,char*value){
 	char* buffer = calloc(sizeof(char),MAX_HTTP_REQUEST_LINE);
 	sprintf(buffer,"%s=%s",var,value);
 	putenv(buffer);
 	
-	//free(buffer);
+	return buffer;
 }
 
 /*
  *Creates the necessary envirement variables for running a cgi script
  * env		the cgi_env structu to set
  */
-void prepare_env(const cgi_env* env){
+char** prepare_env(const cgi_env* env){
+	char** environ = calloc(sizeof(char*),12);
 	char* clength = calloc(sizeof(char),MAX_HTTP_REQUEST_LINE);
 	sprintf(clength,"%d",env->content_length);
-	setvar("DOCUMENT_ROOT",env->document_root);
-	setvar("GATEWAY_INTERFACE",env->gateway_interface);
-	setvar("PATH",env->path);
-	setvar("QUERY_STRING",env->query_string);
-	setvar("REMOTE_ADDR",env->remote_adr);	
-	setvar("REQUEST_METHOD",env->request_method);
-	setvar("REQUEST_URI",env->request_uri);
-	setvar("SERVER_PROTOCOL",env->server_protocol);
-	setvar("SERVER_SOFTWARE",env->server_software);
-	setvar("CONTENT_TYPE",env->content_type);
-	setvar("CONTENT_LENGTH",clength);
+	environ[0] = setvar("DOCUMENT_ROOT",env->document_root);
+	environ[1] = setvar("GATEWAY_INTERFACE",env->gateway_interface);
+	environ[2] = setvar("PATH",env->path);
+	environ[3] = setvar("QUERY_STRING",env->query_string);
+	environ[4] = setvar("REMOTE_ADDR",env->remote_adr);	
+	environ[5] = setvar("REQUEST_METHOD",env->request_method);
+	environ[6] = setvar("REQUEST_URI",env->request_uri);
+	environ[7] = setvar("SERVER_PROTOCOL",env->server_protocol);
+	environ[8] = setvar("SERVER_SOFTWARE",env->server_software);
+	environ[9] = setvar("CONTENT_TYPE",env->content_type);
+	environ[10] = setvar("CONTENT_LENGTH",clength);
+	environ[11] = NULL;
 		
+	return environ;
 }
+
+void run_program(const cgi_env* env,char* program,struct http_request *req,char** environ){
+	int comm[2];
+	// prepare the necessary pipes
+	pipe(comm);
+	printf("running program\n");	
+	// start seperate threads
+	if(fork() == 0){  // Program
+		printf("before duping program\n");
+		dup2(req->ci->sd,1);
+		dup2(comm[0],0);
+		printf("HTTP/1.1 200 OK\n");	
+		execle(program,"program",NULL,environ);
+
+	}else{ // Server
+
+		char* buffer= calloc(sizeof(char),MAX_BUFFER_SIZE);
+		if(env->content_length > 0){
+
+			fgets(buffer,env->content_length,req->ci->fin);
+			write(comm[1],buffer,env->content_length);
+		}
+	}
+	
+}
+
+
 /*
  * the handler function that will be hooked (Added to the list of available handlers)to the server
  */
 int handler_cgi(struct http_request* req){
 	char* path = calloc(sizeof(char),strlen(req->uri)+strlen(document_root)+2);
+	char** environ;
 	if(strlen(req->uri)>1){
 		sprintf(path,"%s%s",document_root,req->uri);
 	}else{ // id root directory
@@ -208,13 +240,14 @@ int handler_cgi(struct http_request* req){
 	// we start by fetching the envirement variables
 	cgi_env* env = init_cgi_env(req);
 	// set env variables
-	prepare_env(env);
+	environ = prepare_env(env);
 	// end POST DATA if available
-	printf("send POST data\n");
+	run_program(env,path,req,environ);
 	return 1;
 }
 
 void init_module(void){
 	// register the module(hook it to the server).
 	handler_uri_add(handler_cgi);
-}
+};
+
