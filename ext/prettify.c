@@ -17,13 +17,15 @@ int handler(struct http_request *req){
 	strcpy(adresse,document_root);
 	strcat(adresse,req->uri);
 	int fdout = fileno(req->ci->fout);
+
+	printf("%s\n",adresse);
 	
 	//close(fdout);
 	if(strstr(req->query_string , "fontify")!=NULL){
 		http_send_response(req->ci,200,"Ok","text/html");
 		if(fork()){
 		dup2(fdout,1);
-		execlp("pygmentize","pygmentize", "-f", "html", "-Ofull", adresse,NULL);
+		execlp("/usr/bin/pygmentize","/usr/bin/pygmentize", "-f", "html", "-Ofull", adresse,NULL);
 		_exit(0);
 		}return 1;
 	}
@@ -31,7 +33,7 @@ int handler(struct http_request *req){
 		http_send_response(req->ci,200,"Ok","text/html");
 		if(fork()){
 			dup2(fdout,1);
-		execlp("/usr/bin/pandoc","/usr/bin/pandoc", "-s", adresse,NULL);
+			execlp("/usr/bin/pandoc","/usr/bin/pandoc", "-s", adresse,NULL);
 			_exit(0);
 		}
 		return 1;
@@ -42,7 +44,6 @@ int handler(struct http_request *req){
 
 void init_module(void)
 {	
-	trace("Loading .. \n");
 	handler_uri_add(handler);
 }
 

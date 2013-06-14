@@ -42,7 +42,7 @@ modules-dir	../ext			  # Répertoire où se trouvent les extensions
 #module		simple-module		  # L'exemple dont le source est donné
 module		cgi			  # scripts CGI
 module		ssi			  # Sous-ensemble SSI sur fichier .shtml
-#module		prettify		  # Mise en forme de fichiers
+module		prettify		  # Mise en forme de fichiers
 fontify-cmd	pygmentize -f html -Ofull #     - commande "fontification"
 markdown-cmd	pandoc -s		  #     - commande Markdown -> HTML
 module		mytraceuri		  # Une trace simple sur les URI chargées
