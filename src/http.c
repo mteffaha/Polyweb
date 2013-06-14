@@ -78,9 +78,10 @@ void http_send_response(struct client_info *ci, int code, char *msg, char* mime)
 	fprintf(ci->fout, "Connection: close\n");
 	fprintf(ci->fout, "Server: %s\n",SERVER_FULL_NAME);
 	if(strlen(mime) > 0){
-	fprintf(ci->fout, "Content-type: %s\n",mime);
+	fprintf(ci->fout, "Content-Type: %s\n",mime);
 	fprintf(ci->fout, "\n");
 	}
+	fflush(ci->fout);
 }
 
 

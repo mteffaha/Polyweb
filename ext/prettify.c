@@ -12,21 +12,28 @@
 
 
 int handler(struct http_request *req){
-	http_send_response(req->ci,202,"Accepted","text/html");
+	
 	char adresse[MAX]="";
 	strcpy(adresse,document_root);
 	strcat(adresse,req->uri);
 	int fdout = fileno(req->ci->fout);
-	dup2(fdout,1);
-	close(fdout);
+	
+	//close(fdout);
 	if(strstr(req->query_string , "fontify")!=NULL){
-		if(fork())
-		execlp("/usr/bin/pygmentize","/usr/bin/pygmentize", "-f", "html", "-Ofull", adresse,NULL);
-		return 1;
+		http_send_response(req->ci,200,"Ok","text/html");
+		if(fork()){
+		dup2(fdout,1);
+		execlp("pygmentize","pygmentize", "-f", "html", "-Ofull", adresse,NULL);
+		_exit(0);
+		}return 1;
 	}
 	if(strstr(req->query_string , "markdown")!=NULL){
-		if(fork())
+		http_send_response(req->ci,200,"Ok","text/html");
+		if(fork()){
+			dup2(fdout,1);
 		execlp("/usr/bin/pandoc","/usr/bin/pandoc", "-s", adresse,NULL);
+			_exit(0);
+		}
 		return 1;
 	}
 

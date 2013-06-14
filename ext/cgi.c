@@ -207,6 +207,7 @@ void run_program(const cgi_env* env,char* program,struct http_request *req,char*
 		dup2(comm[0],0);
 		printf("HTTP/1.1 200 OK\n");	
 		execle(program,"program",NULL,environ);
+		exit(EXIT_SUCCESS);
 
 	}else{ // Server
 

@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <errno.h>
 #include <string.h>
@@ -68,11 +69,12 @@ char* readable_fs(double size/*in bytes*/, char *buf) {
 	if( access(path, F_OK ) != -1 && !is_dir(path) ) {
     		char* mime = mimetype_find(path);
     		char str[MAX_FILE_BUFFER];
-    		FILE* file = fopen(path,"r");
-    		http_send_response(req->ci,200,"Ok",mime);
-    		while(fgets(str,MAX_FILE_BUFFER,file)!=NULL){
-    			fprintf(req->ci->fout,"%s",str);
-    		}
+				
+    				http_send_response(req->ci,200,"Ok",mime);
+				FILE* file = fopen(path,"r");
+				while(fgets(str,MAX_FILE_BUFFER,file)!=NULL){
+					fputs(str,req->ci->fout);
+				}
     		return 1;
 	}else{
 		struct dirent** pdir;

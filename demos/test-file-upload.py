@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 #					-*-coding: utf-8 -*-
 #
 # test-file-upload.py	-- Un exmple de chargement de fichier
